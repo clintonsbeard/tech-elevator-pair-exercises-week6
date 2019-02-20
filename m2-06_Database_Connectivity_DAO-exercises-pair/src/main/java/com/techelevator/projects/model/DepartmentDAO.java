@@ -9,6 +9,7 @@ public interface DepartmentDAO {
 	 * 
 	 * @return all departments as Department objects in a List
 	 */
+	
 	public List<Department> getAllDepartments();
 
 	/**
@@ -18,6 +19,7 @@ public interface DepartmentDAO {
 	 * @param nameSearch the search string to look for in the department name
 	 * @return all matching departments as Department objects in a List
 	 */
+	
 	public List<Department> searchDepartmentsByName(String nameSearch);
 
 	/**
@@ -26,6 +28,7 @@ public interface DepartmentDAO {
 	 * 
 	 * @param updatedDepartment the department object to update
 	 */
+	
 	public void saveDepartment(Department updatedDepartment);
 
 	/**
@@ -34,6 +37,7 @@ public interface DepartmentDAO {
 	 * @param newDepartment the department object to insert
 	 * @return the department object with its new id filled in
 	 */
+	
 	public Department createDepartment(Department newDepartment);
 
 	/**
@@ -42,5 +46,7 @@ public interface DepartmentDAO {
 	 * @param id the department id to get from the datastore
 	 * @return a filled out department object
 	 */
+	
 	public Department getDepartmentById(Long id);
+	
 }
