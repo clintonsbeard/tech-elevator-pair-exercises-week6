@@ -67,7 +67,7 @@ public class JDBCEmployeeDAOIntegrationTest {
 	
 	private int insertEmployee(int departmentId, String firstName, String lastName, String birthDate, String gender, String hireDate) {
 		String employeeSql = "INSERT INTO employee (employee_id, department_id, first_name, last_name, birth_date, gender, hire_date) " +
-							"VALUES (DEFAULT, ?, ?, ?, '" + birthDate + "', ?, '" + hireDate + "') RETURNING employee_id";
+							 "VALUES (DEFAULT, ?, ?, ?, '" + birthDate + "', ?, '" + hireDate + "') RETURNING employee_id";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(employeeSql, departmentId, firstName, lastName, gender);
 		results.next();
 		return results.getInt(1);
