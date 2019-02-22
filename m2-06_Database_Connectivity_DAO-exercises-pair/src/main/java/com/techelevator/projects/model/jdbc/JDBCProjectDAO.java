@@ -48,8 +48,6 @@ public class JDBCProjectDAO implements ProjectDAO {
 		return projects;
 	}
 	
-	// BRING IN DATES
-
 	@Override
 	public void removeEmployeeFromProject(Long projectId, Long employeeId) {
 		String removeEmployeeFromProject = "DELETE FROM project_employee " +

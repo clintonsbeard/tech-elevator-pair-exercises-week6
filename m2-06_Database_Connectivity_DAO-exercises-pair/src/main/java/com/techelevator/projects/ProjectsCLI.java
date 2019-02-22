@@ -71,13 +71,17 @@ public class ProjectsCLI {
 		application.run();
 	}
 	
-	public ProjectsCLI() {
-		this.menu = new Menu(System.in, System.out);
-		
+	public BasicDataSource getDataSource() {
 		BasicDataSource dataSource = new BasicDataSource();
 		dataSource.setUrl("jdbc:postgresql://localhost:5432/projects");
 		dataSource.setUsername("postgres");
 		dataSource.setPassword("postgres1");
+		
+		return dataSource;
+	}
+	
+	public ProjectsCLI() {
+		this.menu = new Menu(System.in, System.out);
 		
 		departmentDAO = new JDBCDepartmentDAO(dataSource);
 		employeeDAO = new JDBCEmployeeDAO(dataSource);

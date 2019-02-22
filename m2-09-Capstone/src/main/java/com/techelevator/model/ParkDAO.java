@@ -8,6 +8,8 @@ public interface ParkDAO {
 
 	public Park mapRowToPark(SqlRowSet results);
 	
+	public Park getParkDescription(int parkChoice);
+	
 	public List<Park> getAllAvailableParks();
 	
 }
