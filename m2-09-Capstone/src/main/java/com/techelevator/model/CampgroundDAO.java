@@ -8,6 +8,6 @@ public interface CampgroundDAO {
 
 	public Campground mapRowToCampground(SqlRowSet results);
 	
-	public List<Campground> getAllAvailableCampgrounds();
+	public List<Campground> getAllCampgroundsByPark(int userChoice);
 	
 }

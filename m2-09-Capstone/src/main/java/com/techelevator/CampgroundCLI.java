@@ -23,7 +23,7 @@ public class CampgroundCLI {
 	}
 	
 	public void run() {
-		menu.displayAllParks();
+		menu.displayMenu();
 	}
 
 }

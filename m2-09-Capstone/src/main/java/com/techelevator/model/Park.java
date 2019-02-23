@@ -9,6 +9,7 @@ public class Park {
 	private int area;
 	private int annualVisitors;
 	private String parkDesc;
+	private int parkChoice;
 	
 	public int getParkId() {
 		return parkId;
@@ -57,6 +58,13 @@ public class Park {
 	}
 	public void setParkDesc(String parkDesc) {
 		this.parkDesc = parkDesc;
+	}
+	
+	public int getParkChoice() {
+		return parkChoice;
+	}
+	public void setParkChoice(int parkChoice) {
+		this.parkChoice = parkChoice;
 	}
 	
 }

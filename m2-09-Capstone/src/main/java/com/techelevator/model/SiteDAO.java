@@ -8,6 +8,6 @@ public interface SiteDAO {
 
 	public Site mapRowToSite(SqlRowSet results);
 	
-	public List<Site> getAllAvailableSites();
+	public List<Site> getAllAvailableSites(int campgroundId, String arrivalDate, String departureDate);
 	
 }
