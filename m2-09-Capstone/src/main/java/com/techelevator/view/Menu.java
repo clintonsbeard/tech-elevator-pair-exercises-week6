@@ -7,6 +7,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -18,6 +19,7 @@ import com.techelevator.model.Campground;
 import com.techelevator.model.CampgroundDAO;
 import com.techelevator.model.Park;
 import com.techelevator.model.ParkDAO;
+import com.techelevator.model.Reservation;
 import com.techelevator.model.ReservationDAO;
 import com.techelevator.model.Site;
 import com.techelevator.model.SiteDAO;
@@ -40,19 +42,24 @@ public class Menu {
 	private static final String[] CAMPGROUND_OPTIONS = new String[] { CAMPGROUND_OPTION_SEARCH_FOR_AVAILABLE_RESERVATION,
 																	  CAMPGROUND_OPTION_RETURN_TO_PREVIOUS_SCREEN };
 	
-	private PrintWriter out;
 	private Scanner in;
+	private PrintWriter out;
+	private DataSource dataSource;
+	private FormatData format;
+	
 	private int parkChoice;
-	private Park chosenPark;
 	private int campgroundChoice;
+	private Park chosenPark;
+	private Reservation reservation;
+	
 	private String arrivalDate;
 	private String departureDate;
-	private DataSource dataSource;
+	private int daysBetween;
+	
 	private ParkDAO parkDAO;
 	private CampgroundDAO campgroundDAO;
 	private SiteDAO siteDAO;
-	private FormatData format;
-	private int daysBetween;
+	private ReservationDAO reservationDAO;
 	
 	public Menu(InputStream input, OutputStream output, DataSource dataSource) {
 		this.out = new PrintWriter(output);
@@ -62,6 +69,7 @@ public class Menu {
 		parkDAO = new JDBCParkDAO(dataSource);
 		campgroundDAO = new JDBCCampgroundDAO(dataSource);
 		siteDAO = new JDBCSiteDAO(dataSource);
+		reservationDAO = new JDBCReservationDAO(dataSource);
 		format = new FormatData();
 	}
 
@@ -139,17 +147,25 @@ public class Menu {
 	}
 	
 	public int getParkChoiceFromUser() {
-		System.out.print("Please select an option and press enter: ");
-		parkChoice = in.nextInt();
-		in.nextLine();
+		while (true) {
+			System.out.print("Please select an option and press enter: ");
+			try {
+				parkChoice = in.nextInt();
+				in.nextLine();
+			}
+			catch (Exception e) {
+				System.out.println("Error: Incorrect selection.  Please select a number from the list.");
+				break;
+			}
+		}
 		return parkChoice;
 	}
 	
 	private void listAllParks(List<Park> parks) {
 		if (parks.size() > 0) {
 			for (int i = 0; i < parks.size(); i++) {
-				int optionNum = i + 1;
-				System.out.println(optionNum + ") " + parks.get(i).getName());
+				int parkNumber = parks.get(i).getParkId();
+				System.out.println(parkNumber + ") " + parks.get(i).getName());
 			}
 			System.out.println("Q) " + "quit");
 		}
@@ -184,9 +200,8 @@ public class Menu {
 		if (campgrounds.size() > 0) {
 			System.out.printf("%-5s%-35s%-12s%-12s%-3s\n", "", "Name", "Open", "Close", "Daily Fee");
 			for (int i = 0; i < campgrounds.size(); i++) {
-				int optionNum = i + 1;
-				String optionNumString = "#" + optionNum;
-				System.out.printf("%-5s%-35s%-12s%-12s$%-3.2f\n", optionNumString, campgrounds.get(i).getName(),
+				int campgroundNumber = campgrounds.get(i).getCampgroundId();
+				System.out.printf("#%-4s%-35s%-12s%-12s$%-3.2f\n", campgroundNumber, campgrounds.get(i).getName(),
 								  format.convertMonthToString(campgrounds.get(i).getOpenMonth()),
 								  format.convertMonthToString(campgrounds.get(i).getCloseMonth()),
 								  campgrounds.get(i).getDailyFee());
@@ -196,28 +211,34 @@ public class Menu {
 	}
 	
 	public void searchForSites() {
-		System.out.print("\nWhich campground (enter 0 to cancel)? ");
-		campgroundChoice = in.nextInt();
-		in.nextLine();
-		System.out.print("What is the arrival date? ");
-		arrivalDate = in.nextLine();
-		String arrivalDateFormat = format.formatInputDate(arrivalDate);
-		System.out.print("What is the departure date? ");
-		departureDate = in.nextLine();
-		String departureDateFormat = format.formatInputDate(arrivalDate);
-		
-		LocalDate arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
-		LocalDate departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
-		Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
-		daysBetween = periodBetween.getDays();
-		
-		List<Site> allSites = siteDAO.getAllAvailableSites(campgroundChoice, arrivalDateFormat, departureDateFormat);
-		listAllAvailableSites(allSites);
+		while (true) {
+			System.out.print("\nWhich campground (enter 0 to cancel)? ");
+			campgroundChoice = in.nextInt();
+			in.nextLine();
+			if (campgroundChoice == 0) {
+				break;
+			}
+			System.out.print("What is the arrival date? ");
+			arrivalDate = in.nextLine();
+			String arrivalDateFormat = format.formatInputDate(arrivalDate);
+			System.out.print("What is the departure date? ");
+			departureDate = in.nextLine();
+			String departureDateFormat = format.formatInputDate(arrivalDate);
+			
+			LocalDate arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
+			LocalDate departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
+			Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
+			daysBetween = periodBetween.getDays();
+			
+			List<Site> allSites = siteDAO.getAllAvailableSites(campgroundChoice, arrivalDateFormat, departureDateFormat);
+			listAllAvailableSites(allSites);
+		}
 	}
 	
 	public void listAllAvailableSites(List<Site> sites) {
 		if (sites.size() > 0) {
-			System.out.printf("\n%-12s%-12s%-18s%-18s%-14s%-10s\n", "Site No.", "Max Occup.", "Accessible?", "Max RV Length", "Utilities", "Cost");
+			System.out.println("\nResults Matching Your Search Criteria");
+			System.out.printf("%-12s%-12s%-18s%-18s%-14s%-10s\n", "Site No.", "Max Occup.", "Accessible?", "Max RV Length", "Utilities", "Cost");
 			for (int i = 0; i < sites.size(); i++) {
 				System.out.printf("%-12s%-12s%-18s%-18s%-14s$%-10s\n", sites.get(i).getSiteNumber(), sites.get(i).getMaxOccupancy(),
 																	   format.capitalizeFirstLetter(sites.get(i).getAccessible()),
@@ -227,6 +248,7 @@ public class Menu {
 			}
 		}
 		System.out.flush();
+		makeReservation();
 	}
 	
 	public void formatParkDesc(String parkDesc) {
@@ -236,6 +258,25 @@ public class Menu {
 	        sb.replace(i, i + 1, "\n");
 	    }
 	    System.out.println(sb.toString());
+	}
+	
+	public void makeReservation() {
+		while (true) {
+			System.out.print("\nWhich site should be reserved (enter 0 to cancel)? ");
+			int siteChoice = in.nextInt();
+			in.nextLine();
+			if (siteChoice == 0) {
+				break;
+			}
+			System.out.print("\nWhat name should the reservation be made under? ");
+			String reservationUnderName = in.nextLine();
+			
+			reservation = new Reservation();
+			reservationDAO.bookReservation(reservation, siteChoice, reservationUnderName, arrivalDate, departureDate);
+			
+			System.out.println("The reservation has been made and the confirmation id is " + reservation.getReservationId());
+			break;
+		}
 	}
 	
 }
