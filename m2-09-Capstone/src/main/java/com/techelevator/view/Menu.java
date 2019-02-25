@@ -156,18 +156,20 @@ public class Menu {
 	
 	public void getParkChoiceFromUser() {
 		while (true) {
-			boolean numberCheck = true;
+			boolean validCheck = true;
 			System.out.print("Please select an option and press enter: ");
+			String parkChoiceString = in.nextLine();
+			if (parkChoiceString.equalsIgnoreCase("Q")) {
+				System.exit(0);
+			}
 			try {
-				parkChoice = in.nextInt();
-				in.nextLine();
+				parkChoice = Integer.parseInt(parkChoiceString);
 			}
-			catch (InputMismatchException e) {
-				System.out.println("Error: Invalid choice.  Please choose and insert a number from the list.");
-				numberCheck = false;
-				parkChoice = 0;
+			catch (NumberFormatException e) {
+				System.out.println("Error: Invalid choice.  Please choose and insert a number from the list.\n");
+				validCheck = false;
 			}
-			if (numberCheck == true) {
+			if (validCheck) {
 				break;
 			}
 		}
@@ -257,14 +259,38 @@ public class Menu {
 			LocalDate arrivalLocalDate = null;
 			LocalDate departureLocalDate = null;
 			try {
-				System.out.print("What is the arrival date? ");
-				arrivalDate = in.nextLine();
-				arrivalDateParsed = dateFormatInput.parse(arrivalDate);
-				arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
-				System.out.print("What is the departure date? ");
-				departureDate = in.nextLine();
-				departureDateParsed = dateFormatInput.parse(departureDate);	
-				departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
+				while (true) {
+					boolean arrivalCheck = true;
+					System.out.print("What is the arrival date? ");
+					arrivalDate = in.nextLine();
+					arrivalDateParsed = dateFormatInput.parse(arrivalDate);
+					try {
+						arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
+					}
+					catch (DateTimeParseException e) {
+						System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
+						arrivalCheck = false;
+					}
+					if (arrivalCheck) {
+						break;
+					}
+				}
+				while (true) {
+					boolean departureCheck = true;
+					System.out.print("What is the departure date? ");
+					departureDate = in.nextLine();
+					departureDateParsed = dateFormatInput.parse(departureDate);	
+					try {
+						departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
+					}
+					catch (DateTimeParseException e) {
+						System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
+						departureCheck = false;
+					}
+					if (departureCheck) {
+						break;
+					}
+				}
 			} catch (ParseException e) {
 				System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
 				break;
