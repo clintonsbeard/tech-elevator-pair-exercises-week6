@@ -113,12 +113,13 @@ public class Menu {
 			int optionNum = i+1;
 			out.println(optionNum+") "+options[i]);
 		}
-		out.print("\nPlease choose an option: ");
+		out.print("\nPlease select an option and press enter: ");
 		out.flush();
 	}
 	
 	public void displayMenu() {
 		while (true) {
+			System.out.println();
 			displayAllParks();
 			while (true) {
 				displayParkInformation(parkChoice);
@@ -145,7 +146,6 @@ public class Menu {
 	}
 	
 	public void displayAllParks() {
-		System.out.println("View Parks Interface");
 		System.out.println("Select a Park for Further Details");
 		
 		List<Park> allParks = parkDAO.getAllAvailableParks();
@@ -195,12 +195,7 @@ public class Menu {
 		System.out.printf("%-17s%-17s\n", "Annual Visitors: ", format.formatAnnualVisitors(chosenPark.getAnnualVisitors()));
 		System.out.println();
 		formatParkDesc(chosenPark.getParkDesc());
-		
-		parkCommands();
-	}
-	
-	public void parkCommands() {
-		System.out.println("\nSelect a Command");
+		System.out.print("\nSelect a Command");
 	}
 	
 	public void displayAllCampgroundsByPark(int userChoice) {
