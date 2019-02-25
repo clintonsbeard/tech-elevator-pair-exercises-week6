@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -101,7 +102,7 @@ public class Menu {
 			// eat the exception, an error message will be displayed below since choice will be null
 		}
 		if(choice == null) {
-			out.println("\n*** "+userInput+" is not a valid option ***\n");
+			out.println("Error: Invalid choice.  Please choose and insert a number from the list.");
 		}
 		return choice;
 	}
@@ -112,6 +113,7 @@ public class Menu {
 			int optionNum = i+1;
 			out.println(optionNum+") "+options[i]);
 		}
+		out.print("\nPlease choose an option: ");
 		out.flush();
 	}
 	
@@ -122,7 +124,7 @@ public class Menu {
 				displayParkInformation(parkChoice);
 				String choice = (String)getChoiceFromOptions(PARK_OPTIONS);
 				if(choice.equals(PARK_OPTION_VIEW_CAMPGROUNDS)) {
-					System.out.println(chosenPark.getName() + " National Park Campgrounds\n");
+					System.out.println("\n" + chosenPark.getName() + " National Park Campgrounds\n");
 					displayAllCampgroundsByPark(parkChoice);
 					while (true) {
 						String choice2 = (String)getChoiceFromOptions(CAMPGROUND_OPTIONS);
@@ -152,12 +154,23 @@ public class Menu {
 		getParkChoiceFromUser();
 	}
 	
-	public int getParkChoiceFromUser() {
-		System.out.print("Please select an option and press enter: ");
-		parkChoice = in.nextInt();
-		in.nextLine();
-			
-		return parkChoice;
+	public void getParkChoiceFromUser() {
+		while (true) {
+			boolean numberCheck = true;
+			System.out.print("Please select an option and press enter: ");
+			try {
+				parkChoice = in.nextInt();
+				in.nextLine();
+			}
+			catch (InputMismatchException e) {
+				System.out.println("Error: Invalid choice.  Please choose and insert a number from the list.");
+				numberCheck = false;
+				parkChoice = 0;
+			}
+			if (numberCheck == true) {
+				break;
+			}
+		}
 	}
 	
 	private void listAllParks(List<Park> parks) {
@@ -210,24 +223,33 @@ public class Menu {
 			else {
 				System.out.println("Error: No campgrounds found in system.");
 			}
+			boolean numberCheck = false;
 			while (true) {
+				numberCheck = false;
 				System.out.print("\nWhich campground (enter 0 to cancel)? ");
 				try {
 					campgroundChoice = in.nextInt();
 					in.nextLine();
+					numberCheck = true;
+					if (campgroundChoice == 0) {
+						break;
+					}
 				}
 				catch (InputMismatchException e) {
 					System.out.print("Error: Invalid choice.  Please choose and insert a number from the list.\n");
+					campgroundChoice = 0;
+					numberCheck = false;
 					break;
 				}
+				break;
 			}
 			if (campgroundChoice == 0) {
 				break;
 			}
-			if (campgroundChoice > campgrounds.size()) {
+			if (numberCheck == true && campgroundChoice > campgrounds.size()) {
 				System.out.println("Error: Invalid choice.  Please choose and insert a number from the list.\n");
 			}
-			else {
+			if (numberCheck == true) {
 				searchForSites();
 			}
 		}
@@ -237,27 +259,29 @@ public class Menu {
 		while (true) {
 			Date arrivalDateParsed = null;
 			Date departureDateParsed = null;
+			LocalDate arrivalLocalDate = null;
+			LocalDate departureLocalDate = null;
 			try {
 				System.out.print("What is the arrival date? ");
 				arrivalDate = in.nextLine();
 				arrivalDateParsed = dateFormatInput.parse(arrivalDate);
+				arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
 				System.out.print("What is the departure date? ");
 				departureDate = in.nextLine();
 				departureDateParsed = dateFormatInput.parse(departureDate);	
+				departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
 			} catch (ParseException e) {
-				System.out.println("Please enter the date in the correct format (MM/dd/yyyy).");
+				System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
 				break;
 			}
 			String formattedArrivalDate = dateFormatOutput.format(arrivalDateParsed);
 			String formattedDepartureDate = dateFormatOutput.format(departureDateParsed);
+			
+			Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
+			daysBetween = periodBetween.getDays();
 				
 			List<Site> allSites = siteDAO.getAllAvailableSites(campgroundChoice, formattedArrivalDate, formattedDepartureDate);
 			listAllAvailableSites(allSites);
-		
-			LocalDate arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
-			LocalDate departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
-			Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
-			daysBetween = periodBetween.getDays();
 		}
 	}
 	
