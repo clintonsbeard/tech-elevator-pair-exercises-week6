@@ -2,9 +2,9 @@ package com.techelevator;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
-import com.techelevator.view.Menu2;
+import com.techelevator.view.Menu;
 
-public class Campground2 {
+public class CampgroundCLI {
 
 	private static final String PARK_OPTION_VIEW_CAMPGROUNDS = "View Campgrounds";
 	private static final String PARK_OPTION_SEARCH_FOR_RESERVATION = "Search for Reservation";
@@ -18,7 +18,7 @@ public class Campground2 {
 	private static final String[] CAMPGROUND_OPTIONS = new String[] { CAMPGROUND_OPTION_SEARCH_FOR_AVAILABLE_RESERVATION,
 																	  CAMPGROUND_OPTION_RETURN_TO_PREVIOUS_SCREEN };
 	
-	private Menu2 menu;
+	private Menu menu;
 	
 	private String parkChoiceString;
 	private int parkChoice;
@@ -26,17 +26,17 @@ public class Campground2 {
 	private boolean reservationCheck;
 	
 	public static void main(String[] args) {
-		Campground2 application = new Campground2();
+		CampgroundCLI application = new CampgroundCLI();
 		application.run();
 	}
 
-	public Campground2() {
+	public CampgroundCLI() {
 		BasicDataSource dataSource = new BasicDataSource();
 		dataSource.setUrl("jdbc:postgresql://localhost:5432/campground");
 		dataSource.setUsername("postgres");
 		dataSource.setPassword("postgres1");
 		
-		this.menu = new Menu2(System.in, System.out, dataSource);
+		this.menu = new Menu(System.in, System.out, dataSource);
 	}
 	
 	public void run() {

@@ -28,7 +28,7 @@ import com.techelevator.model.jdbc.JDBCParkDAO;
 import com.techelevator.model.jdbc.JDBCReservationDAO;
 import com.techelevator.model.jdbc.JDBCSiteDAO;
 
-public class Menu2 {
+public class Menu {
 	
 	private Scanner in;
 	private PrintWriter out;
@@ -50,11 +50,12 @@ public class Menu2 {
 	private ReservationDAO reservationDAO;
 	
 	private List<Site> sites;
+	private int[] siteNumbers;
 	
 	SimpleDateFormat dateFormatInput = new SimpleDateFormat("MM/dd/yyyy");
 	SimpleDateFormat dateFormatOutput = new SimpleDateFormat("yyyy-MM-dd");
 	
-	public Menu2(InputStream input, OutputStream output, DataSource dataSource) {
+	public Menu(InputStream input, OutputStream output, DataSource dataSource) {
 		this.out = new PrintWriter(output);
 		this.in = new Scanner(input);
 		this.dataSource = dataSource;
@@ -248,7 +249,7 @@ public class Menu2 {
 	
 	public void listAllAvailableSites(String arrivalDate, String departureDate) {
 		List<Site> sites = siteDAO.getAllAvailableSites(campgroundChoice, arrivalDate, departureDate);
-		int[] siteNumbers = new int[sites.size()];
+		siteNumbers = new int[sites.size()];
 		if (sites.size() > 0) {
 			System.out.println("\nResults Matching Your Search Criteria");
 			System.out.printf("%-12s%-12s%-18s%-18s%-14s%-10s\n", "Site No.", "Max Occup.", "Accessible?", "Max RV Length", "Utilities", "Cost");
@@ -277,23 +278,25 @@ public class Menu2 {
 				}
 			}
 		}
-		boolean numberCheck = false;
-		for (int id : siteNumbers) {
-	        if (id == siteChoice) {
-	        	numberCheck = true;
-	        }
-	    }
-		return numberCheck;
 	}
 	
 	public boolean makeReservation() {
 		boolean reservationCheck = false;
 		while (true) {
+			boolean numberCheck = false;
 			System.out.print("Which site should be reserved (enter 0 to cancel)? ");
 			int siteChoice = in.nextInt();
 			in.nextLine();
 			if (siteChoice == 0) {
 				break;
+			}
+			for (int id : siteNumbers) {
+		        if (id == siteChoice) {
+		        	numberCheck = true;
+		        }
+		    }
+			if (numberCheck = false) {
+				System.out.println("Error: Invalid choice.  Please select from the options listed above.\n");
 			}
 			System.out.print("What name should the reservation be made under? ");
 			String reservationUnderName = in.nextLine();
