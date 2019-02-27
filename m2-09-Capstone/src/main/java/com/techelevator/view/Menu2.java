@@ -151,6 +151,7 @@ public class Menu2 {
 				in.nextLine();
 			}
 			catch (InputMismatchException e) {
+				in.next();
 				System.out.println("Error: Invalid choice.  Please select from the options listed above.");
 				inputMismatch = true;
 				validCheck = false;
@@ -164,19 +165,19 @@ public class Menu2 {
 		        	validCheck = false;
 		        }
 		    }
-			if (numberCheck == true) {
+			if (numberCheck == true && inputMismatch == false) {
 				validCheck = true;
 			}
 			if (numberCheck == false && inputMismatch == false) {
 				System.out.println("Error: Invalid choice.  Please select from the options listed above.");
 				validCheck = false;
 			}
-			if (campgroundChoice == 0) {
+			if (campgroundChoice == 0 && inputMismatch == false) {
 				validCheck = false;
 				cancelCheck = true;
 				return cancelCheck;
 			}
-			if (validCheck == true) {
+			if (validCheck == true && inputMismatch == false) {
 				return cancelCheck;
 			}
 		}
@@ -187,53 +188,67 @@ public class Menu2 {
 		Date departureDateParsed = null;
 		LocalDate arrivalLocalDate = null;
 		LocalDate departureLocalDate = null;
-		try {
-			while (true) {
-				boolean arrivalCheck = true;
-				System.out.print("What is the arrival date? ");
-				arrivalDate = in.nextLine();
-				arrivalDateParsed = dateFormatInput.parse(arrivalDate);
-				try {
-					arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
+		boolean arrivalParseCheck = false;
+		boolean departureParseCheck = false;
+		siteInput:
+		while (true) {
+			try {
+				while (true) {
+					boolean arrivalCheck = true;
+					System.out.print("What is the arrival date? ");
+					arrivalDate = in.nextLine();
+					arrivalDateParsed = dateFormatInput.parse(arrivalDate);
+					try {
+						arrivalLocalDate = LocalDate.parse(format.formatInputDate(arrivalDate));
+					}
+					catch (DateTimeParseException e) {
+						System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
+						arrivalCheck = false;
+					}
+					if (arrivalCheck) {
+						arrivalParseCheck = true;
+						break;
+					}
 				}
-				catch (DateTimeParseException e) {
-					System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
-					arrivalCheck = false;
+				while (true) {
+					boolean departureCheck = true;
+					System.out.print("What is the departure date? ");
+					departureDate = in.nextLine();
+					departureDateParsed = dateFormatInput.parse(departureDate);	
+					try {
+						departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
+					}
+					catch (DateTimeParseException e) {
+						System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
+						departureCheck = false;
+					}
+					if (departureCheck) {
+						departureParseCheck = true;
+						break;
+					}
 				}
-				if (arrivalCheck) {
-					break;
+			} catch (ParseException e) {
+				System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
+			}
+			if (arrivalParseCheck && departureParseCheck) {
+				String formattedArrivalDate = dateFormatOutput.format(arrivalDateParsed);
+				String formattedDepartureDate = dateFormatOutput.format(departureDateParsed);
+				Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
+				daysBetween = periodBetween.getDays();
+				if (departureLocalDate.isBefore(arrivalLocalDate) || departureLocalDate.isEqual(arrivalLocalDate)) {
+					System.out.println("Error: Departure date is before or on arrival date.  Please select a valid date range.\n");
+				}
+				else {
+					listAllAvailableSites(formattedArrivalDate, formattedDepartureDate);
+					break siteInput;
 				}
 			}
-			while (true) {
-				boolean departureCheck = true;
-				System.out.print("What is the departure date? ");
-				departureDate = in.nextLine();
-				departureDateParsed = dateFormatInput.parse(departureDate);	
-				try {
-					departureLocalDate = LocalDate.parse(format.formatInputDate(departureDate));
-				}
-				catch (DateTimeParseException e) {
-					System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
-					departureCheck = false;
-				}
-				if (departureCheck) {
-					break;
-				}
-			}
-		} catch (ParseException e) {
-			System.out.println("Please enter the date in the correct format (MM/dd/yyyy).\n");
 		}
-		String formattedArrivalDate = dateFormatOutput.format(arrivalDateParsed);
-		String formattedDepartureDate = dateFormatOutput.format(departureDateParsed);
-			
-		Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
-		daysBetween = periodBetween.getDays();
-				
-		listAllAvailableSites(formattedArrivalDate, formattedDepartureDate);
 	}
 	
 	public void listAllAvailableSites(String arrivalDate, String departureDate) {
 		List<Site> sites = siteDAO.getAllAvailableSites(campgroundChoice, arrivalDate, departureDate);
+		int[] siteNumbers = new int[sites.size()];
 		if (sites.size() > 0) {
 			System.out.println("\nResults Matching Your Search Criteria");
 			System.out.printf("%-12s%-12s%-18s%-18s%-14s%-10s\n", "Site No.", "Max Occup.", "Accessible?", "Max RV Length", "Utilities", "Cost");
@@ -243,6 +258,7 @@ public class Menu2 {
 																	   sites.get(i).getMaxRvLength(),
 																	   format.capitalizeFirstLetter(sites.get(i).getUtilities()), 
 																	   (daysBetween * sites.get(i).getCost()));
+				siteNumbers[i] = sites.get(i).getSiteNumber();
 			}
 		}
 		if (sites.size() <= 0) {
@@ -261,7 +277,13 @@ public class Menu2 {
 				}
 			}
 		}
-		System.out.println();
+		boolean numberCheck = false;
+		for (int id : siteNumbers) {
+	        if (id == siteChoice) {
+	        	numberCheck = true;
+	        }
+	    }
+		return numberCheck;
 	}
 	
 	public boolean makeReservation() {
