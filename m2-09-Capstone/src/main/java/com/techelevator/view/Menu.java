@@ -282,21 +282,29 @@ public class Menu {
 	
 	public boolean makeReservation() {
 		boolean reservationCheck = false;
+		int siteChoice;
+		reservation:
 		while (true) {
-			boolean numberCheck = false;
-			System.out.print("Which site should be reserved (enter 0 to cancel)? ");
-			int siteChoice = in.nextInt();
-			in.nextLine();
-			if (siteChoice == 0) {
-				break;
-			}
-			for (int id : siteNumbers) {
-		        if (id == siteChoice) {
-		        	numberCheck = true;
-		        }
-		    }
-			if (numberCheck = false) {
-				System.out.println("Error: Invalid choice.  Please select from the options listed above.\n");
+			siteCheck:
+			while (true) {
+				boolean numberCheck = false;
+				System.out.print("Which site should be reserved (enter 0 to cancel)? ");
+				siteChoice = in.nextInt();
+				in.nextLine();
+				if (siteChoice == 0) {
+					break reservation;
+				}
+				for (int id : siteNumbers) {
+			        if (id == siteChoice) {
+			        	numberCheck = true;
+			        }
+			    }
+				if (numberCheck == false) {
+					System.out.println("Error: Invalid choice.  Please select from the options listed above.\n");
+				}
+				else {
+					break siteCheck;
+				}
 			}
 			System.out.print("What name should the reservation be made under? ");
 			String reservationUnderName = in.nextLine();
