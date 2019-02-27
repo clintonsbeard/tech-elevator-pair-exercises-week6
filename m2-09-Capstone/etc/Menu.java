@@ -66,6 +66,8 @@ public class Menu {
 	private SiteDAO siteDAO;
 	private ReservationDAO reservationDAO;
 	
+	private List<Site> sites;
+	
 	SimpleDateFormat dateFormatInput = new SimpleDateFormat("MM/dd/yyyy");
 	SimpleDateFormat dateFormatOutput = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -186,7 +188,7 @@ public class Menu {
 		System.out.flush();
 	}
 	
-	private void displayParkInformation(int parkChoice) {
+	public void displayParkInformation(int parkChoice) {
 		chosenPark = parkDAO.getParkDescription(parkChoice);
 		
 		System.out.println();
@@ -233,7 +235,7 @@ public class Menu {
 					}
 				}
 				catch (InputMismatchException e) {
-					System.out.print("Error: Invalid choice.  Please choose and insert a number from the list.\n");
+					System.out.print("Error: Invalid choice.  Please choose from the options listed above.\n");
 					campgroundChoice = 0;
 					numberCheck = false;
 					break;
@@ -244,7 +246,7 @@ public class Menu {
 				break;
 			}
 			if (numberCheck == true && campgroundChoice > campgrounds.size()) {
-				System.out.println("Error: Invalid choice.  Please choose and insert a number from the list.\n");
+				System.out.println("Error: Invalid choice.  Please choose from the options listed above.\n");
 			}
 			if (numberCheck == true) {
 				searchForSites();
@@ -301,8 +303,8 @@ public class Menu {
 			Period periodBetween = Period.between(arrivalLocalDate, departureLocalDate);
 			daysBetween = periodBetween.getDays();
 				
-			List<Site> allSites = siteDAO.getAllAvailableSites(campgroundChoice, formattedArrivalDate, formattedDepartureDate);
-			listAllAvailableSites(allSites);
+			sites = siteDAO.getAllAvailableSites(campgroundChoice, formattedArrivalDate, formattedDepartureDate);
+			listAllAvailableSites(sites);
 		}
 	}
 	
@@ -317,9 +319,25 @@ public class Menu {
 																	   format.capitalizeFirstLetter(sites.get(i).getUtilities()), 
 																	   (daysBetween * sites.get(i).getCost()));
 			}
+			System.out.flush();
+			makeReservation();
 		}
-		System.out.flush();
-		makeReservation();
+		if (sites.size() <= 0) {
+			while (true) {
+				System.out.print("\nSorry, but no campsites are available during those dates.  Would you like to enter another date range? (Y/N) ");
+				String tryAgainPrompt = in.nextLine();
+				System.out.println();
+				if (tryAgainPrompt.equalsIgnoreCase("Y")) {
+					break;
+				}
+				if (tryAgainPrompt.equalsIgnoreCase("N")) {
+					System.exit(0);
+				}
+				else {
+					System.out.println("Error: Invalid choice.  Please choose from the options listed above.\n");
+				}
+			}
+		}
 	}
 	
 	public void formatParkDesc(String parkDesc) {
@@ -338,6 +356,9 @@ public class Menu {
 			in.nextLine();
 			if (siteChoice == 0) {
 				break;
+			}
+			if (siteChoice > sites.size()) {
+				System.out.println("Error: Invalid choice.  Please choose from the options listed above.\n");
 			}
 			System.out.print("\nWhat name should the reservation be made under? ");
 			String reservationUnderName = in.nextLine();
